@@ -73,8 +73,7 @@ func main() {
 	fmt.Println("write", fenv)
 }
 
-var env_template = `
-#!/bin/sh
+var env_template = `#!/bin/sh
 case ":${PATH}:" in
     *:"$GOPATH/bin":*)
         ;;
