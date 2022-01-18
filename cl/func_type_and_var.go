@@ -209,6 +209,7 @@ func toStructType(ctx *blockCtx, v *ast.StructType) *types.Struct {
 	fieldList := v.Fields.List
 	fields := make([]*types.Var, 0, len(fieldList))
 	tags := make([]string, 0, len(fieldList))
+	names := make(map[string]*ast.Ident)
 	for _, field := range fieldList {
 		typ := toType(ctx, field.Type)
 		if field.Names == nil { // embedded
@@ -218,7 +219,16 @@ func toStructType(ctx *blockCtx, v *ast.StructType) *types.Struct {
 			continue
 		}
 		for _, name := range field.Names {
-			fld := types.NewField(token.NoPos, pkg, name.Name, typ, false)
+			nm := name.Name
+			if ident, ok := names[nm]; ok {
+				pos := ctx.Position(name.NamePos)
+				ctx.handleCodeErrorf(&pos, "%v redeclared\n\t%v other declaration of %v",
+					nm, ctx.Position(ident.NamePos), nm)
+				continue
+			} else {
+				names[nm] = name
+			}
+			fld := types.NewField(token.NoPos, pkg, nm, typ, false)
 			fields = append(fields, fld)
 			tags = append(tags, toFieldTag(field.Tag))
 		}
