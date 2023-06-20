@@ -605,11 +605,6 @@ func preloadGopFile(p *gox.Package, ctx *blockCtx, file string, f *ast.File, con
 				}
 				for _, v := range specs {
 					spec := v.(*ast.ValueSpec)
-					if len(spec.Values) > 0 {
-						pos := ctx.Position(v.Pos())
-						ctx.handleCodeErrorf(&pos, "cannot assign value to field in class file")
-						continue
-					}
 					var embed bool
 					if spec.Names == nil {
 						embed = true

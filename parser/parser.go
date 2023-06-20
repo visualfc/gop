@@ -3390,6 +3390,9 @@ func (p *parser) parseValueSpec(doc *ast.CommentGroup, keyword token.Token, iota
 				typ = ident
 				idents = nil
 			}
+			if p.tok == token.ASSIGN {
+				p.error(p.pos, "syntax error: cannot assign value to field in class file")
+			}
 		}
 		p.expect(token.SEMICOLON)
 	} else {

@@ -414,11 +414,11 @@ func TestClassErrCode(t *testing.T) {
 	testClassErrCode(t, `var (
 	v int = 10
 )
-`, `/foo/bar.gopx:2:8: expected ';', found '='`, ``)
+`, `/foo/bar.gopx:2:8: syntax error: cannot assign value to field in class file`, ``)
 	testClassErrCode(t, `var (
 	v = 10
 )
-`, `/foo/bar.gopx:2:4: expected ';', found '='`, ``)
+`, `/foo/bar.gopx:2:4: syntax error: cannot assign value to field in class file`, ``)
 }
 
 // -----------------------------------------------------------------------------
