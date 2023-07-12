@@ -378,9 +378,25 @@ func pkgRef(at *gox.PkgRef, name string) (o types.Object, alias bool) {
 	return at.TryRef(name), false
 }
 
+func trySymbol(ctx *blockCtx, name string) (o types.Object, alias bool) {
+	at := ctx.pkg.PkgRef
+	if c := name[0]; c >= 'a' && c <= 'z' {
+		name = string(rune(c)+('A'-'a')) + name[1:]
+		if ctx.loadSymbol(name) {
+			if v := at.TryRef(name); v != nil && gox.IsFunc(v.Type()) {
+				return v, true
+			}
+		}
+		return
+	}
+	return at.TryRef(name), false
+}
+
 func lookupPkgRef(ctx *blockCtx, pkg *gox.PkgRef, x *ast.Ident, pkgKind int) (o types.Object, alias bool) {
 	if pkg != nil {
 		return pkgRef(pkg, x.Name)
+	} else if o, alias = trySymbol(ctx, x.Name); o != nil {
+		return
 	}
 	if pkgKind == objPkgRef {
 		for _, at := range ctx.lookups {
