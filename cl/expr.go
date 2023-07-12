@@ -382,10 +382,9 @@ func trySymbol(ctx *blockCtx, name string) (o types.Object, alias bool) {
 	at := ctx.pkg.PkgRef
 	if c := name[0]; c >= 'a' && c <= 'z' {
 		name = string(rune(c)+('A'-'a')) + name[1:]
-		if ctx.loadSymbol(name) {
-			if v := at.TryRef(name); v != nil && gox.IsFunc(v.Type()) {
-				return v, true
-			}
+		ctx.loadSymbol(name)
+		if v := at.TryRef(name); v != nil && gox.IsFunc(v.Type()) {
+			return v, true
 		}
 		return
 	}
