@@ -147,11 +147,13 @@ func (p *nodeInterp) LoadExpr(node ast.Node) (src string, pos token.Position) {
 type loader interface {
 	load()
 	pos() token.Pos
+	isGen() bool
 }
 
 type baseLoader struct {
 	fn    func()
 	start token.Pos
+	gen   bool
 }
 
 func initLoader(ctx *pkgCtx, syms map[string]loader, start token.Pos, name string, fn func(), genCode bool) {
@@ -171,7 +173,7 @@ func initLoader(ctx *pkgCtx, syms map[string]loader, start token.Pos, name strin
 			&pos, "%s redeclared in this block\n\tprevious declaration at %v", name, oldpos)
 		return
 	}
-	syms[name] = &baseLoader{start: start, fn: fn}
+	syms[name] = &baseLoader{start: start, fn: fn, gen: genCode}
 }
 
 func (p *baseLoader) load() {
@@ -182,13 +184,18 @@ func (p *baseLoader) pos() token.Pos {
 	return p.start
 }
 
+func (p *baseLoader) isGen() bool {
+	return p.gen
+}
+
 type typeLoader struct {
 	typ, typInit func()
 	methods      []func()
 	start        token.Pos
+	gen          bool
 }
 
-func getTypeLoader(ctx *pkgCtx, syms map[string]loader, start token.Pos, name string) *typeLoader {
+func getTypeLoader(ctx *pkgCtx, syms map[string]loader, start token.Pos, name string, genCode bool) *typeLoader {
 	t, ok := syms[name]
 	if ok {
 		if start != token.NoPos {
@@ -203,7 +210,7 @@ func getTypeLoader(ctx *pkgCtx, syms map[string]loader, start token.Pos, name st
 			return ld
 		}
 	} else {
-		t = &typeLoader{start: start}
+		t = &typeLoader{start: start, gen: genCode}
 		syms[name] = t
 	}
 	return t.(*typeLoader)
@@ -211,6 +218,10 @@ func getTypeLoader(ctx *pkgCtx, syms map[string]loader, start token.Pos, name st
 
 func (p *typeLoader) pos() token.Pos {
 	return p.start
+}
+
+func (p *typeLoader) isGen() bool {
+	return p.gen
 }
 
 func (p *typeLoader) load() {
@@ -443,6 +454,9 @@ func NewPackage(pkgPath string, pkg *ast.Package, conf *Config) (p *gox.Package,
 		preloadFile(p, ctx, fpath, f, false)
 	}
 	for name, f := range ctx.syms {
+		if f.isGen() {
+			continue
+		}
 		if _, ok := f.(*typeLoader); ok {
 			ctx.loadType(name)
 		} else if isOverloadFunc(name) {
@@ -468,14 +482,14 @@ func NewPackage(pkgPath string, pkg *ast.Package, conf *Config) (p *gox.Package,
 
 	for _, f := range sfiles {
 		if f.IsProj {
-			loadFile(ctx, f.File)
+			loadFile(ctx, f.File, true)
 			gmxMainFunc(p, ctx)
 			break
 		}
 	}
 	for _, f := range sfiles {
 		if !f.IsProj { // only one .gmx file
-			loadFile(ctx, f.File)
+			loadFile(ctx, f.File, filepath.Ext(f.path) != ".go")
 		}
 	}
 	for _, ld := range ctx.tylds {
@@ -522,7 +536,7 @@ func getEntrypoint(f *ast.File, isMod bool) string {
 	}
 }
 
-func loadFile(ctx *pkgCtx, f *ast.File) {
+func loadFile(ctx *pkgCtx, f *ast.File, genCode bool) {
 	for _, decl := range f.Decls {
 		switch d := decl.(type) {
 		case *ast.FuncDecl:
@@ -533,7 +547,7 @@ func loadFile(ctx *pkgCtx, f *ast.File) {
 				}
 			} else {
 				if name, ok := getRecvTypeName(ctx, d.Recv, false); ok {
-					getTypeLoader(ctx, ctx.syms, token.NoPos, name).load()
+					getTypeLoader(ctx, ctx.syms, token.NoPos, name, genCode).load()
 				}
 			}
 		case *ast.GenDecl:
@@ -599,7 +613,7 @@ func preloadGopFile(p *gox.Package, ctx *blockCtx, file string, f *ast.File, con
 		syms := parent.syms
 		pos := f.Pos()
 		specs := getFields(ctx, f)
-		ld := getTypeLoader(parent, syms, pos, classType)
+		ld := getTypeLoader(parent, syms, pos, classType, true)
 		ld.typ = func() {
 			if debugLoad {
 				log.Println("==> Load > NewType", classType)
@@ -743,7 +757,7 @@ func preloadFile(p *gox.Package, ctx *blockCtx, file string, f *ast.File, genCod
 					if debugLoad {
 						log.Printf("==> Preload method %s.%s\n", name, d.Name.Name)
 					}
-					var ld = getTypeLoader(parent, syms, token.NoPos, name)
+					var ld = getTypeLoader(parent, syms, token.NoPos, name, genCode)
 					var fn func()
 					if genCode {
 						fn = func() {
@@ -776,7 +790,7 @@ func preloadFile(p *gox.Package, ctx *blockCtx, file string, f *ast.File, genCod
 					if debugLoad {
 						log.Println("==> Preload type", name)
 					}
-					ld := getTypeLoader(parent, syms, t.Name.Pos(), name)
+					ld := getTypeLoader(parent, syms, t.Name.Pos(), name, genCode)
 					if genCode {
 						ld.typ = func() {
 							old, _ := p.SetCurFile(goFile, true)
