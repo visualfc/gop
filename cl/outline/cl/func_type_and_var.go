@@ -37,7 +37,11 @@ func toRecv(ctx *blockCtx, recv *ast.FieldList) (ret *types.Var, ok bool) {
 	if len(v.Names) > 0 {
 		name = v.Names[0].Name
 	}
-	t := toType(ctx, v.Type)
+	typ, star := getRecvType(v.Type)
+	t := toType(ctx, typ)
+	if star {
+		t = types.NewPointer(t)
+	}
 	if ok = checkRecvType(ctx, t, v.Type); ok {
 		ret = ctx.pkg.NewParam(v.Pos(), name, t)
 	}

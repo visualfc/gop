@@ -14,7 +14,7 @@ import (
 	"github.com/goplus/gop/scanner"
 )
 
-func _TestTypeParams(t *testing.T) {
+func TestTypeParams(t *testing.T) {
 	gopMixedClTest(t, "main", `package main
 
 type Data[X, Y any] struct {
@@ -27,7 +27,12 @@ func (p *Data[T, R]) foo() {
 `, `
 v := Data[int, float64]{1}
 v.foo()
-`, `
+`, `package main
+
+func main() {
+	v := Data[int, float64]{1}
+	v.foo()
+}
 `)
 }
 
