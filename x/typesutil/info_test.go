@@ -3,6 +3,10 @@ package typesutil_test
 import (
 	"fmt"
 
+	"github.com/goplus/gop/x/typesutil/internal/diffp"
+
+	"github.com/goplus/gox"
+
 	goast "go/ast"
 	"go/constant"
 	goformat "go/format"
@@ -91,6 +95,13 @@ func testInfo(t *testing.T, src interface{}) {
 }
 
 func testItems(t *testing.T, name string, items []string, goitems []string) {
+
+	data := diffp.Diff("Go", []byte(strings.Join(goitems, "\n")), "Go+", []byte(strings.Join(items, "\n")))
+	if len(data) > 0 {
+		t.Errorf("%s", data)
+	}
+	return
+
 	text := strings.Join(items, "\n")
 	gotext := strings.Join(goitems, "\n")
 	if len(items) != len(goitems) || text != gotext {
@@ -321,16 +332,27 @@ type TypeAndValue struct {
 }
 
 func TestVarTypes(t *testing.T) {
+	gox.SetDebug(gox.DbgFlagAll)
 	testInfo(t, `package main
-type T struct {
-	x int
-	y int
-}
-var v *int = nil
-var v1 []int;
-var v2 map[int8]string;
-var v3 struct{};
-var v4 *T = &T{100,200};
+
+// var a1 int = 100+200
+// var a2 = 100+200
+var a3 = 100 == int32(200)
+// var a2 int = 200
+// var a3 = int(100)
+// const c = 100
+
+// type T struct {
+// 	x int
+// 	y int
+// }
+// var v *int = nil
+// var v1 []int
+// var v2 map[int8]string
+// var v3 struct{}
+// var v4 *T = &T{100,200}
+// var v5 [5]int
+// var v6 = v5[1:2]
 `)
 }
 
@@ -346,7 +368,9 @@ func test() {
 	p := Person{
 		name: "jack",
 	}
+	p2 := Person{"jack",10}
 	_ = p.name
+	_ = p2.name
 }
 `)
 }

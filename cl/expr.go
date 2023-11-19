@@ -213,7 +213,7 @@ func twoValue(inFlags []int) bool {
 func recordTypesValue(ctx *blockCtx, expr ast.Expr, n int) {
 	if rec := ctx.recorder(); rec != nil {
 		e := ctx.cb.Get(n)
-		rec.Type(expr, typesutil.NewTypeAndValueForValue(e.Type, e.CVal))
+		rec.recordTypeAndValue(e, expr)
 	}
 }
 
@@ -268,6 +268,7 @@ func compileExpr(ctx *blockCtx, expr ast.Expr, inFlags ...int) {
 		compileIndexListExpr(ctx, v, twoValue(inFlags))
 	case *ast.SliceExpr:
 		compileSliceExpr(ctx, v)
+		recordTypesValue(ctx, v, -1)
 	case *ast.StarExpr:
 		compileStarExpr(ctx, v)
 	case *ast.ArrayType:
@@ -559,7 +560,8 @@ func compileCallExpr(ctx *blockCtx, v *ast.CallExpr, inFlags int) {
 		err := compileCallArgs(fn, fnt, ctx, v, ellipsis, flags)
 		if err == nil {
 			if rec := ctx.recorder(); rec != nil {
-				rec.Type(v, typesutil.NewTypeAndValueForCallResult(ctx.cb.Get(-1).Type))
+				e := ctx.cb.Get(-1)
+				rec.Type(v, typesutil.NewTypeAndValueForCallResult(e.Type, e.CVal))
 			}
 			break
 		}

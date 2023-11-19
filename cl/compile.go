@@ -19,6 +19,7 @@ package cl
 
 import (
 	"fmt"
+	"go/constant"
 	"go/types"
 	"log"
 	"os"
@@ -215,8 +216,180 @@ type Config struct {
 	Outline bool
 }
 
+type exprInfo struct {
+	typ *types.Basic
+	val constant.Value // constant value; or nil (if not a constant)
+}
+
+type typesRecord struct {
+	Recorder
+	untypedElem map[*gox.Element]ast.Expr
+	untyped     map[ast.Expr]exprInfo
+}
+
+func newTypesRecord(rec Recorder) *typesRecord {
+	return &typesRecord{rec, make(map[*gox.Element]ast.Expr), make(map[ast.Expr]exprInfo)}
+}
+
+func isUntyped(typ types.Type) bool {
+	if t, ok := typ.(*types.Basic); ok {
+		return (t.Info() & types.IsUntyped) != 0
+	}
+	return false
+}
+
+func isShift(op token.Token) bool {
+	return op == token.SHL || op == token.SHR
+}
+
+func isComparison(op token.Token) bool {
+	// Note: tokens are not ordered well to make this much easier
+	switch op {
+	case token.EQL, token.NEQ, token.LSS, token.LEQ, token.GTR, token.GEQ:
+		return true
+	}
+	return false
+}
+
+func (p *typesRecord) recordTypeAndValue(e *gox.Element, expr ast.Expr) {
+	if isUntyped(e.Type) {
+		p.untypedElem[e] = expr
+		p.untyped[expr] = exprInfo{e.Type.(*types.Basic), e.CVal}
+	}
+	//log.Printf("~~~~~~~~~>>>> %#v %v %v\n", expr, e.Type, e.CVal)
+	//p.updateExprType0(nil, expr, e.Type, true)
+	p.Recorder.Type(expr, typesutil.NewTypeAndValueForValue(e.Type, e.CVal))
+}
+
+func (p *typesRecord) updateUntypedType(e *gox.Element, typ types.Type) {
+	//return
+	//log.Println("~~~~~~~~~~~ updated", e.Type, e.CVal, e.Val, typ)
+	expr, ok := p.untypedElem[e]
+	if !ok {
+		return
+	}
+	p.Recorder.Type(expr, typesutil.NewTypeAndValueForValue(typ, e.CVal))
+}
+
+func (p *typesRecord) updateExprType0(parsen ast.Expr, x ast.Expr, typ types.Type, final bool) {
+	old, found := p.untyped[x]
+	if !found {
+		//return // nothing to do
+	}
+	// update operands of x if necessary
+	switch x := x.(type) {
+	case *ast.BadExpr,
+		*ast.FuncLit,
+		*ast.CompositeLit,
+		*ast.IndexExpr,
+		*ast.SliceExpr,
+		*ast.TypeAssertExpr,
+		*ast.StarExpr,
+		*ast.KeyValueExpr,
+		*ast.ArrayType,
+		*ast.StructType,
+		*ast.FuncType,
+		*ast.InterfaceType,
+		*ast.MapType,
+		*ast.ChanType:
+		// These expression are never untyped - nothing to do.
+		// The respective sub-expressions got their final types
+		// upon assignment or use.
+		return
+
+	case *ast.CallExpr:
+		// Resulting in an untyped constant (e.g., built-in complex).
+		// The respective calls take care of calling updateExprType
+		// for the arguments if necessary.
+
+	case *ast.Ident, *ast.BasicLit, *ast.SelectorExpr:
+		// An identifier denoting a constant, a constant literal,
+		// or a qualified identifier (imported untyped constant).
+		// No operands to take care of.
+
+	case *ast.ParenExpr:
+		p.updateExprType0(x, x.X, typ, final)
+
+	case *ast.UnaryExpr:
+		// If x is a constant, the operands were constants.
+		// The operands don't need to be updated since they
+		// never get "materialized" into a typed value. If
+		// left in the untyped map, they will be processed
+		// at the end of the type check.
+		if old.val != nil {
+			break
+		}
+		p.updateExprType0(x, x.X, typ, final)
+
+	case *ast.BinaryExpr:
+		if old.val != nil {
+			break // see comment for unary expressions
+		}
+		if isComparison(x.Op) {
+			// The result type is independent of operand types
+			// and the operand types must have final types.
+		} else if isShift(x.Op) {
+			// The result type depends only on lhs operand.
+			// The rhs type was updated when checking the shift.
+			p.updateExprType0(x, x.X, typ, final)
+		} else {
+			// The operand types match the result type.
+			p.updateExprType0(x, x.X, typ, final)
+			p.updateExprType0(x, x.Y, typ, final)
+		}
+
+	default:
+		panic("unreachable")
+	}
+
+	// If the new type is not final and still untyped, just
+	// update the recorded type.
+	// if !final && isUntyped(typ) {
+	// 	old.typ = typ.Underlying().(*types.Basic)
+	// 	p.untyped[x] = old
+	// 	return
+	// }
+
+	// Otherwise we have the final (typed or untyped type).
+	// Remove it from the map of yet untyped expressions.
+	//delete(p.untyped, x)
+	if !found {
+		return
+	}
+
+	// if old.isLhs {
+	// 	// If x is the lhs of a shift, its final type must be integer.
+	// 	// We already know from the shift check that it is representable
+	// 	// as an integer if it is a constant.
+	// 	if !allInteger(typ) {
+	// 		if compilerErrorMessages {
+	// 			p.invalidOp(x, _InvalidShiftOperand, "%s (shift of type %s)", parent, typ)
+	// 		} else {
+	// 			p.invalidOp(x, _InvalidShiftOperand, "shifted operand %s (type %s) must be integer", x, typ)
+	// 		}
+	// 		return
+	// 	}
+	// 	// Even if we have an integer, if the value is a constant we
+	// 	// still must check that it is representable as the specific
+	// 	// int type requested (was issue #22969). Fall through here.
+	// }
+	// if old.val != nil {
+	// 	// If x is a constant, it must be representable as a value of typ.
+	// 	c := operand{old.mode, x, old.typ, old.val, 0}
+	// 	p.convertUntyped(&c, typ)
+	// 	if c.mode == invalid {
+	// 		return
+	// 	}
+	// }
+
+	// Everything's fine, record final type and value for x.
+	//p.recordTypeAndValue(x, old.mode, typ, old.val)
+	//p.recordTypeAndValue()
+	p.Recorder.Type(x, typesutil.NewTypeAndValueForValue(typ, old.val))
+}
+
 type goxRecorder struct {
-	rec Recorder
+	rec *typesRecord
 }
 
 // Member maps identifiers to the objects they denote.
@@ -234,6 +407,10 @@ func (p *goxRecorder) Member(id ast.Node, obj types.Object) {
 		p.rec.Use(v, obj)
 		p.rec.Type(v, tv)
 	}
+}
+
+func (p *goxRecorder) UpdateType(e *gox.Element, typ types.Type) {
+	p.rec.updateUntypedType(e, typ)
 }
 
 type nodeInterp struct {
@@ -389,14 +566,14 @@ type blockCtx struct {
 	targetDir    string
 	classRecv    *ast.FieldList // available when gmxSettings != nil
 	fileScope    *types.Scope   // only valid when isGopFile
-	rec          Recorder
+	rec          *typesRecord
 	fileLine     bool
 	relativePath bool
 	isClass      bool
 	isGopFile    bool // is Go+ file or not
 }
 
-func (bc *blockCtx) recorder() Recorder {
+func (bc *blockCtx) recorder() *typesRecord {
 	if bc.isGopFile {
 		return bc.rec
 	}
@@ -523,8 +700,10 @@ func NewPackage(pkgPath string, pkg *ast.Package, conf *Config) (p *gox.Package,
 		PkgPathIox:      ioxPkgPath,
 		DbgPositioner:   interp,
 	}
+	var rec *typesRecord
 	if conf.Recorder != nil {
-		confGox.Recorder = &goxRecorder{rec: conf.Recorder}
+		rec = newTypesRecord(conf.Recorder)
+		confGox.Recorder = &goxRecorder{rec: rec}
 	}
 	if enableRecover {
 		defer func() {
@@ -557,10 +736,10 @@ func NewPackage(pkgPath string, pkg *ast.Package, conf *Config) (p *gox.Package,
 		fileScope := types.NewScope(p.Types.Scope(), f.Pos(), f.End(), fpath)
 		ctx := &blockCtx{
 			pkg: p, pkgCtx: ctx, cb: p.CB(), targetDir: targetDir, fileScope: fileScope,
-			fileLine: fileLine, relativePath: conf.RelativePath, isClass: f.IsClass, rec: conf.Recorder,
+			fileLine: fileLine, relativePath: conf.RelativePath, rec: rec, isClass: f.IsClass,
 			c2goBase: c2goBase(conf.C2goBase), imports: make(map[string]pkgImp), isGopFile: true,
 		}
-		if rec := ctx.rec; rec != nil {
+		if rec != nil {
 			rec.Scope(f, fileScope)
 		}
 		preloadGopFile(p, ctx, fpath, f, conf)
