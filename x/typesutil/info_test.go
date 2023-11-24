@@ -100,7 +100,7 @@ func testItems(t *testing.T, name string, items []string, goitems []string) {
 	if len(data) > 0 {
 		t.Errorf("%s", data)
 	}
-	return
+	//return
 
 	text := strings.Join(items, "\n")
 	gotext := strings.Join(goitems, "\n")
@@ -331,32 +331,97 @@ type TypeAndValue struct {
 	Value constant.Value
 }
 
+func TestFuncTypes(t *testing.T) {
+	testInfo(t, `package main
+
+func fib(x int) int {
+	if x < 2 {
+		return x
+	}
+	return fib(x-1) - fib(x-2)
+}`)
+}
+
+func TestVar1Types(t *testing.T) {
+	gox.SetDebug(gox.DbgFlagAll)
+	testInfo(t, `package main
+var k0 = [5]int{1:1, 2: 2}
+var k1 = [5]int{1:1, 2: 2}
+var k2 = map[int]int{1:1,2:2}
+var k3 = struct{x int;y int}{x:10, y:20}
+`)
+}
+
+func TestVar2Types(t *testing.T) {
+	gox.SetDebug(gox.DbgFlagAll)
+	testInfo(t, `package main
+var a0 = 1 == 1.0
+var a1 = 2.0 == 2
+var a2 = 1 <2
+func test() {
+	//_ = a
+	// var s = 1	
+	// //_ = int(1 + 0i<<0)
+	// _ = int((1 + 0i) << s)
+	// _ = int(1.0 << s)
+	// _ = int(complex(1, 0) << s)
+}
+`)
+}
 func TestVarTypes(t *testing.T) {
 	gox.SetDebug(gox.DbgFlagAll)
 	testInfo(t, `package main
 
-// var a1 int = 100+200
-// var a2 = 100+200
+var i0 = 100+200
+ var k0 = 201
+var k1 = 100 < int16(200)
+ var k2 = 101 < k0
+ var a0 int = +100
+var a1 int = 100+200
+ var a2 = int32(100) << 2
 var a3 = 100 == int32(200)
-// var a2 int = 200
-// var a3 = int(100)
-// const c = 100
+var a41 = 200
+var a4 = 100+a41
+var a5 int = 200
+var a6 = int(100)
+var a7 = nil == &a1
+const c = 100/2
 
-// type T struct {
-// 	x int
-// 	y int
-// }
-// var v *int = nil
-// var v1 []int
-// var v2 map[int8]string
-// var v3 struct{}
-// var v4 *T = &T{100,200}
-// var v5 [5]int
-// var v6 = v5[1:2]
+type T struct {
+	x int
+	y int
+}
+var v *int = nil
+var v1 []int
+var v2 map[int8]string
+var v3 struct{}
+var v4 *T = &T{100,200}
+var v5 *T = &T{x:100,y:200}
+var v6 = [5]int32{1,2,3}
+var v7 = v6[1:2]
+//var v8 = v6[0]
+
+type Empty interface{}
+type Int int
+type MyInt Empty
+ //func test(n int,a ...int){}
+func main() {
+	var i1 MyInt = 100
+	var i2 Int = 200
+	_ = i1
+	_ = i2
+	//println(100,200)
+	//m := make(map[int]string)
+	//m[0] = "hello"
+	// v6[1] = 100
+	// test(100)
+
+}
 `)
 }
 
 func TestStruct(t *testing.T) {
+	gox.SetDebug(gox.DbgFlagAll)
 	testInfo(t, `package main
 
 type Person struct {
@@ -369,8 +434,13 @@ func test() {
 		name: "jack",
 	}
 	p2 := Person{"jack",10}
-	_ = p.name
-	_ = p2.name
+	p2.name = "world"
+	var n int
+	switch {
+	case n == 100:
+	}
+	_ = p2
+	_ = p
 }
 `)
 }

@@ -272,6 +272,7 @@ func (p *typesRecord) updateUntypedType(e *gox.Element, typ types.Type) {
 }
 
 func (p *typesRecord) updateExprType0(parsen ast.Expr, x ast.Expr, typ types.Type, final bool) {
+	return
 	old, found := p.untyped[x]
 	if !found {
 		//return // nothing to do
@@ -409,7 +410,8 @@ func (p *goxRecorder) Member(id ast.Node, obj types.Object) {
 	}
 }
 
-func (p *goxRecorder) UpdateType(e *gox.Element, typ types.Type) {
+func (p *goxRecorder) UpdateUntyped(e *gox.Element, typ types.Type) {
+	log.Println("~~~~~~~~~~~~`", e, typ)
 	p.rec.updateUntypedType(e, typ)
 }
 
