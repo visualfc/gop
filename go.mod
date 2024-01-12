@@ -8,7 +8,7 @@ require (
 	github.com/goplus/gox v1.13.1-0.20231225053549-a6c41ff21756
 	github.com/goplus/mod v0.11.10-0.20231210062211-b9032d0f7810
 	github.com/qiniu/x v1.13.2
-	golang.org/x/tools v0.16.1
+	golang.org/x/tools v0.17.0
 )
 
 require (
