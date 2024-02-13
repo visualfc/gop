@@ -7,7 +7,7 @@ require (
 	github.com/goplus/c2go v0.7.20
 	github.com/goplus/gox v1.14.1
 	github.com/goplus/mod v0.12.3
-	github.com/qiniu/x v1.13.2
+	github.com/qiniu/x v1.13.5
 	golang.org/x/tools v0.17.0
 )
 
