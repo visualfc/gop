@@ -51,7 +51,7 @@ jobs:
     - name: Codecov
       uses: codecov/codecov-action@v5
       with:
-        slug: goplus/gop
+        slug: goplus/xgo
 
   TestTypeAlias:
     strategy:
@@ -87,7 +87,7 @@ jobs:
     - name: Codecov
       uses: codecov/codecov-action@v5
       with:
-        slug: goplus/gop
+        slug: goplus/xgo
 
   FormatCheck:
     runs-on: ubuntu-latest
