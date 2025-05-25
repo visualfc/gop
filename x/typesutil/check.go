@@ -178,7 +178,7 @@ func (p *Checker) Files(goFiles []*goast.File, xgoFiles []*ast.File) (err error)
 		objMap := DeleteObjects(scope, files)
 		checker := types.NewChecker(conf, fset, pkgTypes, p.goInfo)
 		err = checker.Files(files)
-		// TODO: how to process error?
+		// TODO(xsw): how to process error?
 		CorrectTypesInfo(scope, objMap, p.xgoInfo.Uses)
 		if opts.UpdateGoTypesOverload {
 			gogen.InitThisGopPkg(pkgTypes)
