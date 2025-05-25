@@ -50,7 +50,9 @@ jobs:
         go-version: ${{ matrix.go }}
 
     - name: Run testcases
-      run: go test -v -coverprofile="coverage.txt" -covermode=atomic ./...
+      run: |
+        ./all.bash
+        go test -v -coverprofile="coverage.txt" -covermode=atomic ./...
 
     - name: Codecov
       uses: codecov/codecov-action@v5
@@ -80,7 +82,9 @@ jobs:
       run: echo "GODEBUG=gotypesalias=1" >> $GITHUB_ENV
 
     - name: Run testcases
-      run: go test -v -coverprofile="coverage.txt" -covermode=atomic ./...
+      run: |
+        ./all.bash
+        go test -v -coverprofile="coverage.txt" -covermode=atomic ./...
 
     - name: Codecov
       uses: codecov/codecov-action@v5
