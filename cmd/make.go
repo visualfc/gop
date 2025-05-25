@@ -377,7 +377,7 @@ func buildGoplusTools(useGoProxy bool) {
 	// Clear gop run cache
 	cleanGopRunCache()
 
-	println("\nGo+ tools built successfully!")
+	println("\nXGo tools built successfully!")
 }
 
 func goVersion() string {
@@ -407,7 +407,7 @@ we recommend you add the above install directory into your PATH environment vari
 func install() {
 	installPath := linkGoplusToLocalBin()
 
-	println("\nGo+ tools installed successfully!")
+	println("\nXGo tools installed successfully!")
 
 	if _, err := execCommand("gop", "version"); err != nil {
 		showHelpPostInstall(installPath)
