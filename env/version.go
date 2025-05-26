@@ -40,7 +40,7 @@ func init() {
 
 func initEnv() {
 	if buildVersion == "" {
-		initEnvByGop()
+		initEnvByXgo()
 		return
 	}
 	if !strings.HasPrefix(buildVersion, "v"+MainVersion+".") {
@@ -48,7 +48,7 @@ func initEnv() {
 	}
 }
 
-func initEnvByGop() {
+func initEnvByXgo() {
 	if fname := filepath.Base(os.Args[0]); !isXgoCmd(fname) {
 		if ret, err := xgoEnv(); err == nil {
 			parts := strings.SplitN(strings.TrimRight(ret, "\n"), "\n", 3)
