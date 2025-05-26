@@ -1,7 +1,13 @@
 XGo Quick Start
 ======
 
-Our vision is to **enable everyone to create production-level applications**.
+XGo is the first AI-native programming language that integrates software engineering into a unified whole.
+
+```
+XGo := C * Go * Python * JavaScript + Scratch
+```
+
+Our vision is to **enable everyone to become a builder of the world**.
 
 #### Easy to learn
 
