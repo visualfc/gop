@@ -13,7 +13,7 @@
 <!--
 [![VSCode](https://img.shields.io/badge/vscode-XGo-teal.svg)](https://github.com/gopcode/vscode-goplus)
 [![Discord](https://img.shields.io/discord/983646982100897802?label=Discord&logo=discord&logoColor=white)](https://discord.gg/mYjWCJDcAr)
-[![Interpreter](https://img.shields.io/badge/interpreter-iGo+-seagreen.svg)](https://github.com/goplus/igop)
+[![Interpreter](https://img.shields.io/badge/interpreter-iXGo-seagreen.svg)](https://github.com/goplus/ixgo)
 -->
 
 [![Build Status](https://github.com/goplus/xgo/actions/workflows/go.yml/badge.svg)](https://github.com/goplus/xgo/actions/workflows/go.yml)
