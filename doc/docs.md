@@ -1334,10 +1334,10 @@ xgo clean   # Clean all XGo auto generated files
 xgo go      # Convert XGo packages into Go packages
 ```
 
-When we use [`igop`](https://github.com/goplus/igop) command, it generates bytecode to execute.
+When we use [`ixgo`](https://github.com/goplus/ixgo) command, it interprets and executes the program.
 
 ```bash
-igop  # Run a XGo program
+ixgo # Run a XGo program
 ```
 
 In bytecode mode, XGo doesn't support `cgo`. However, in Go-code-generation mode, XGo fully supports `cgo`.
