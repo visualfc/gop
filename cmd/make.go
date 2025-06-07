@@ -80,7 +80,8 @@ var xgoRoot = getXgoRoot()
 var initCommandExecuteEnv = os.Environ()
 var commandExecuteEnv = initCommandExecuteEnv
 
-// Always put `gop` command as the first item, as it will be referenced by below code.
+// Always put `gop` command as the first item and `xgo` command as the second item,
+// as it will be referenced by below code.
 var xgoBinFiles = []string{"gop", "xgo"}
 
 const (
@@ -89,9 +90,8 @@ const (
 
 func init() {
 	if inWindows {
-		for index, file := range xgoBinFiles {
-			file += ".exe"
-			xgoBinFiles[index] = file
+		for index := range xgoBinFiles {
+			xgoBinFiles[index] += ".exe"
 		}
 	}
 }
@@ -311,12 +311,15 @@ func linkGoplusToLocalBin() string {
 		}
 	}
 
-	for _, file := range xgoBinFiles {
+	for i, file := range xgoBinFiles {
+		targetLink := filepath.Join(goBinPath, file)
+		if i == 0 { // `gop` is the first file, we will link it to `xgo`.
+			file = xgoBinFiles[1]
+		}
 		sourceFile := filepath.Join(gopBinPath, file)
 		if !checkPathExist(sourceFile, false) {
 			log.Fatalf("Error: %s is not existed, you should build XGo before linking.\n", sourceFile)
 		}
-		targetLink := filepath.Join(goBinPath, file)
 		if checkPathExist(targetLink, false) {
 			// Delete existed one
 			if err := os.Remove(targetLink); err != nil {
