@@ -582,7 +582,7 @@ func releaseNewVersion(tag string) {
 func runRegtests() {
 	println("\nStart running regtests.")
 
-	cmd := exec.Command(filepath.Join(xgoRoot, "bin/"+xgoBinFiles[0]), "go", "./...")
+	cmd := exec.Command(filepath.Join(xgoRoot, "bin/"+xgoBinFiles[1]), "go", "./...")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Dir = filepath.Join(xgoRoot, "demo")
