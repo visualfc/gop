@@ -422,7 +422,7 @@ func runTestcases() {
 	os.Chdir(xgoRoot)
 
 	coverage := "-coverprofile=coverage.txt"
-	gopCommand := filepath.Join(detectGopBinPath(), xgoBinFiles[0])
+	gopCommand := filepath.Join(detectGopBinPath(), xgoBinFiles[1])
 	if !checkPathExist(gopCommand, false) {
 		println("Error: XGo must be installed before running testcases.")
 		os.Exit(1)
