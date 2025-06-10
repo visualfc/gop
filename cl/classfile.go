@@ -385,7 +385,7 @@ func getStringConst(spx gogen.PkgRef, name string) string {
 }
 
 func setBodyHandler(ctx *blockCtx) {
-	if proj := ctx.proj; proj != nil { // in a XGo class file
+	if proj := ctx.proj; proj != nil { // in an XGo class file
 		if scheds := proj.getScheds(ctx.cb); scheds != nil {
 			ctx.cb.SetBodyHandler(func(body *goast.BlockStmt, kind int) {
 				idx := 0
