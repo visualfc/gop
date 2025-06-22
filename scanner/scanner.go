@@ -831,7 +831,7 @@ scanAgain:
 		insertSemi = true
 		pos = s.file.Pos(s.offset - len(s.peekLit))
 		tok, lit = s.peekTok, s.peekLit
-		s.peekTok = 0
+		s.peekTok, s.peekLit = 0, ""
 		goto done
 	}
 
