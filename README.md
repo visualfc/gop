@@ -6,7 +6,7 @@
 <h1>The XGo Programming Language</h1>
 
 
-[xgo.dev](https://xgo.dev) | [Docs](doc/docs.md) | [XGo vs. Go](doc/goplus-vs-go.md) | [Tutorials](https://tutorial.xgo.dev) | [Playground](https://play.xgo.dev) | [XGo REPL (iXGo)](https://repl.xgo.dev) | [Contributing & compiler design](doc/contributing.md)
+[xgo.dev](https://xgo.dev) | [Docs](doc/docs.md) | [XGo vs. Go](doc/xgo-vs-go.md) | [Tutorials](https://tutorial.xgo.dev) | [Playground](https://play.xgo.dev) | [XGo REPL (iXGo)](https://repl.xgo.dev) | [Contributing & compiler design](doc/contributing.md)
 </div>
 
 <div align="center">
