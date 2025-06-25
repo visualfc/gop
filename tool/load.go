@@ -173,8 +173,8 @@ func NewDefaultConf(dir string, flags ConfFlags, tags ...string) (conf *Config, 
 
 func (conf *Config) NewGoCmdConf() *gocmd.Config {
 	if cl := conf.Mod.Opt.Compiler; cl != nil {
-		if os.Getenv("GOP_GOCMD") == "" {
-			os.Setenv("GOP_GOCMD", cl.Name)
+		if os.Getenv("XGO_GOCMD") == "" {
+			os.Setenv("XGO_GOCMD", cl.Name)
 		}
 	}
 	return &gocmd.Config{
