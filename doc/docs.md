@@ -62,7 +62,7 @@ $ brew install goplus
 
 ```bash
 git clone https://github.com/goplus/xgo.git
-cd gop
+cd xgo
 
 # On mac/linux run:
 ./all.bash
@@ -1128,13 +1128,13 @@ c.fprintf c.Stderr, c"Hi, %6.1f\n", 3.14
 
 Here `import "c"` is used to import libc. In this example we call two C standard functions `printf` and `fprintf`, passing a C variable `stderr` and two C strings in the form of `c"xxx"` (an XGo syntax to represent C-style strings).
 
-To run this demo, you need to set the `GOP_GOCMD` environment variable first.
+To run this demo, you need to set the `XGO_GOCMD` environment variable first.
 
 ```sh
-export GOP_GOCMD=llgo  # default is `go`
+export XGO_GOCMD=llgo  # default is `go`
 ```
 
-Then execute `gop run .` to see the output of this example:
+Then execute `xgo run .` to see the output of this example:
 
 ```
 Hello, llgo!
@@ -1277,7 +1277,7 @@ x := strings.NewReplacer("?", "!").Replace("hello, world???")
 fmt.Println "x:", x
 ```
 
-**And all XGo packages can also be imported in Go programs. What you need to do is just using `gop` command instead of `go`.**
+**And all XGo packages can also be imported in Go programs. What you need to do is just using `xgo` command instead of `go`.**
 
 First, let's make a directory named `14-Using-goplus-in-Go`.
 
