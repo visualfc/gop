@@ -318,7 +318,7 @@ sudo apt install gop
 ### on RedHat/CentOS/Fedora
 
 ```sh
-sudo bash -c 'echo -e "[goplus]\nname=Go+ Repo\nbaseurl=https://pkgs.xgo.dev/yum/\nenabled=1\ngpgcheck=0" > /etc/yum.repos.d/goplus.repo'
+sudo bash -c 'echo -e "[goplus]\nname=XGo Repo\nbaseurl=https://pkgs.xgo.dev/yum/\nenabled=1\ngpgcheck=0" > /etc/yum.repos.d/goplus.repo'
 sudo yum install gop
 ```
 
