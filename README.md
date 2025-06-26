@@ -57,7 +57,7 @@ For more details, see [Quick Start](doc/docs.md).
 * Smallest but Turing-complete syntax set in best practices (see [The XGo Mini Specification](doc/spec-mini.md)).
 * Fully compatible with [Go](https://github.com/golang/go) and can mix Go/XGo code in the same package (see [The XGo Full Specification](doc/spec.md) and [Go/XGo Hybrid Programming](doc/docs.md#gogo-hybrid-programming)).
 * Integrating with the C ecosystem including Python/JavaScript and providing limitless possibilities based on [LLGo](https://github.com/goplus/llgo) (see [Importing C/C++ and Python libraries](#importing-cc-and-python-libraries)).
-* Does not support DSL (Domain-Specific Languages), but supports SDF (Specific Domain Friendliness) (see [XGo Classfiles](#xgo-classfiles) and [Domain Text Literal](doc/domian-text-lit.md)).
+* Does not support DSL (Domain-Specific Languages), but supports SDF (Specific Domain Friendliness) (see [XGo Classfiles](#xgo-classfiles) and [Domain Text Literals](doc/domian-text-lit.md)).
 
 
 ## How XGo simplifies Go's expressions
