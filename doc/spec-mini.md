@@ -239,11 +239,22 @@ hex_exponent      = ( "p" | "P" ) [ "+" | "-" ] decimal_digits .
 
 ### Rational literals
 
-TODO
+Rational literals in XGo come in two forms:
+
+* **Rational integers**: An integer followed by the suffix `r`.
+* **Fractions**: A numerator, division operator `/`, denominator, followed by the suffix `r`
+
+```
+rational_lit   = rational_int | rational_frac .
+rational_int   = int_lit "r" .
+rational_frac  = int_lit "/" int_lit "r" .
+```
+
+Examples:
 
 ```sh
-1r       # bigint 1
-2/3r     # bigrat 2/3
+1r       # Rational integer 1
+2/3r     # Fraction 2/3
 ```
 
 ### Imaginary literals
