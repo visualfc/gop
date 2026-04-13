@@ -22,7 +22,19 @@ import (
 
 func testFormat(t *testing.T, name string, src, expect string) {
 	t.Run(name, func(t *testing.T) {
-		result, err := GopstyleSource([]byte(src), name)
+		result, err := XGoStyleSource([]byte(src), false, name)
+		if err != nil {
+			t.Fatal("format.Source failed:", err)
+		}
+		if ret := string(result); ret != expect {
+			t.Fatalf("%s => Expect:\n%s\n=> Got:\n%s\n", name, expect, ret)
+		}
+	})
+}
+
+func testFormatClass(t *testing.T, name string, src, expect string) {
+	t.Run(name, func(t *testing.T) {
+		result, err := XGoStyleSource([]byte(src), true, name)
 		if err != nil {
 			t.Fatal("format.Source failed:", err)
 		}
@@ -532,4 +544,42 @@ demo4 100, func(n1, n2 int) (a, b int) {
 	return n1 + n2, n1 - n2
 }, 100
 `)
+}
+
+func TestClass(t *testing.T) {
+	testFormatClass(t, "format class", `
+import "fmt"
+
+var (
+	Rect
+	x int
+	y int
+)
+
+fmt.Println("hello")
+`, `var (
+	Rect
+	x int
+	y int
+)
+
+echo "hello"
+`)
+}
+
+func TestDeprecatedFunc(t *testing.T) {
+	src := `
+import "fmt"
+
+fmt.println("hello")
+`
+	expect := `echo "hello"
+`
+	ret, err := GopstyleSource([]byte(src), "main.xgo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(ret) != expect {
+		t.Fatalf("GopstyleSource error: %v", ret)
+	}
 }
